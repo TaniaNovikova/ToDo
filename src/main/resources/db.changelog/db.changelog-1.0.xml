@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+    <!--
+         ChangeSet 1: Создание таблицы users.
+         Этот ChangeSet создает таблицу "users", которая хранит информацию о пользователях.
+         Типы текстовых полей определены как varchar, с ограничением длины.
+         SERIAL используется для автоинкремента столбца id (аналог AUTO_INCREMENT в MySQL).
+         Все поля помечены как NOT NULL.
+    -->
+    <changeSet id="1" author="Tatiana Novikova">
+        <sql>
+            <![CDATA[
+            CREATE TABLE users (
+                -- id генерируется автоматически с помощью SERIAL
+                                   id SERIAL PRIMARY KEY NOT NULL,
+                -- Имя пользователя, varchar(255)
+                                   name varchar(255) NOT NULL,
+                -- Логин пользователя, varchar(255)
+                                   username varchar(255) NOT NULL,
+                -- Пароль пользователя, varchar(255)
+                                   password varchar(255) NOT NULL,
+                -- Роль пользователя, varchar(20)
+                                   role varchar(20) NOT NULL,
+                -- Дата создания записи
+                                   create_date timestamp without time zone NOT NULL
+            );
+            ]]>
+        </sql>
+        <rollback>
+            <![CDATA[
+            DROP TABLE users;
+            ]]>
+        </rollback>
+    </changeSet>
+
+    <!--
+         ChangeSet 2: Создание таблицы todo_item.
+         Этот ChangeSet создает таблицу "todo_item" для хранения записей списка задач.
+         Каждая задача (todo_item) связывается с пользователем посредством внешнего ключа.
+         Типы текстовых полей заменены на varchar.
+         Поле done имеет тип boolean с значением по умолчанию false.
+         При удалении записи пользователя связанные задачи удаляются автоматически (ON DELETE CASCADE).
+    -->
+    <changeSet id="2" author="Tatiana Novikova">
+        <sql>
+            <![CDATA[
+            CREATE TABLE todo_item (
+                                       id SERIAL PRIMARY KEY NOT NULL,
+                -- Внешний ключ для связи с таблицей users
+                                       user_id bigint NOT NULL,
+                -- Текст задачи, varchar(255)
+                                       item varchar(255) NOT NULL,
+                -- Статус выполнения задачи: boolean, значение по умолчанию false
+                                       done boolean NOT NULL DEFAULT false,
+                                       create_date timestamp without time zone NOT NULL,
+                                       update_date timestamp without time zone NOT NULL,
+                                       CONSTRAINT fk_todo_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+        <rollback>
+            <![CDATA[
+            DROP TABLE todo_item;
+            ]]>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
